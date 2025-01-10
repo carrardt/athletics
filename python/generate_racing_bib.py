@@ -1,9 +1,10 @@
+import os
 import barcode
 
 # to convert output SVGs to multipage pdf, use the following command :
 # convert -density 300 *.svg output.pdf
 
-FILENAME="/media/carrardt/TC601617/Athle/inscriptions_enfants.csv"
+FILENAME=os.getenv('HOME')+"/inscriptions_enfants.csv"
 SKIP_LINES=1
 FIRST_NAME_FIELD=5
 LAST_NAME_FIELD=4
@@ -28,9 +29,12 @@ for REG in regdatta[SKIP_LINES:]:
     reg_id = int(REG[REGISTRATION_ID_FIELD-1])
     birthday = REG[BIRTHDAY_FIELD-1].strip()
     year = int(birthday.split('/')[-1])
+    print("bday='%s' , year=%d"%(birthday,year))
     last_name = REG[LAST_NAME_FIELD-1].strip('"').strip()
     first_name = REG[FIRST_NAME_FIELD-1].strip('"').strip()
     race_id = RACE_IDS[ REG[RACE_NAME_FIELD-1][:RACE_NAME_LEN] ]
+    if not year in CAT_YEAR.keys():
+        print("year %d not in CAT_YEAR"%year)
     cat = CAT_YEAR[year] + "x"
     bib_csv.write( "%04d ; %09d ; % 07s ; % 20s ; % 20s ; % 5s\n" % (bib_id,reg_id,birthday,last_name,first_name,cat) )
     barcode_data = "%04d%04d%04d" % (bib_id,year,race_id)

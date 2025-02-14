@@ -2,14 +2,16 @@
 
 import time
 import sys
+import os
 
 # Categories for each birth year
 CAT_YEAR = { 2019: 'BB' , 2020: 'BB' , 2016: 'EA' , 2017: 'EA' , 2018: 'EA' , 2014: 'PO' , 2015: 'PO' , 2012: 'BE' , 2013: 'BE' , 2010: 'MI' , 2011: 'MI' }
 
 # first, get that race start time
 START_TIME = time.perf_counter()
-RUNNERS_FILE = sys.argv[1]
-RESULT_FILE = sys.argv[2]
+RACENAME = sys.argv[1]
+RUNNERS_FILE = "%s.csv" % RACENAME
+RESULT_FILE = "%s-results.csv" % RACENAME
 print("Runners <- %s\nResults -> %s"%(RUNNERS_FILE,RESULT_FILE))
 
 # then, we have a little time to initialize everything
@@ -24,14 +26,37 @@ for r in RUNNERS_LIST:
 for (k,v) in RUNNERS.items():
     print(k,v)
 
+# in case of failure, we can restart programm
+# and get corrzect start time from the first line of results file
+START_TIME = time.perf_counter()
+rank = 0
+try:
+    DATA = open(RESULT_FILE,'r').readlines()
+    L = DATA[0].split(';')[1].strip().split(':')
+    H = int(L[0])
+    M = int(L[1])
+    S = float(L[2])
+    START_TIME = ( H * 3660 ) + ( M * 60 ) + S
+    rank = int(DATA[-1].split(';')[0])
+except:
+    START_TIME = time.perf_counter()
+    rank = 1
+
+# print an empty line 
 ofile = open(RESULT_FILE,'a+')
+SECONDS = time.perf_counter() - START_TIME
+MINUTES = int(SECONDS)//60
+SECONDS -= MINUTES * 60
+HOURS = MINUTES//60
+MINUTES -= HOURS*60
+output_line = "%04d ; %02d:%02d:%05.2f ; ?%d ; ; ; " % (rank,HOURS,MINUTES,SECONDS,BIB_ID)
+ofile.write(output_line+'\n')
+ofile.flush()
+rank = rank + 1
 
 # print human readable start time, not used for actual chrono measure
-tod = time.localtime()
-print("Race started at %02dh %02dm %02ds"%(tod.tm_hour,tod.tm_min,tod.tm_sec))
-START_TIME = time.perf_counter()
+print("Race start : TIME=%02d:%02d:%05.2f , RANK=%d"%(HOURS,MINUTES,SECONDS,rank) )
 
-rank=1
 BIB_CODE = input()
 while BIB_CODE != "end":
     SECONDS = time.perf_counter() - START_TIME

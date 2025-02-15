@@ -16,7 +16,7 @@ print("Runners <- %s\nResults -> %s"%(RUNNERS_FILE,RESULT_FILE))
 
 # then, we have a little time to initialize everything
 BIB_CODE_LEN=13
-RUNNERS_LIST=[ [ s.strip() for s in l.split(';') ] for l in open(RUNNERS_FILE).readlines() ]
+RUNNERS_LIST=[ [ s.replace('\xa0','').strip() for s in l.split(';') ] for l in open(RUNNERS_FILE).readlines() ]
 RUNNERS={}
 CATRANK={}
 for r in RUNNERS_LIST:

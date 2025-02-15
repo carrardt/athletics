@@ -20,8 +20,18 @@ RUNNERS_LIST=[ [ s.strip() for s in l.split(';') ] for l in open(RUNNERS_FILE).r
 RUNNERS={}
 CATRANK={}
 for r in RUNNERS_LIST:
-    RUNNERS[ int(r[0]) ] = r
-    CATRANK[r[5]] = 1
+  BIB_CODE=0
+  BIB_NUM=0
+  try:
+    BIB_CODE=int(r[0])
+    BIB_NUM=int(r[1])
+    YEAR = int(r[4].split('/')[2])
+    CATEGORY = CAT_YEAR[YEAR] + r[5]
+    RUNNER = [ BIB_NUM , r[2] , r[3] , r[4] , CATEGORY ]
+    RUNNERS[ BIB_CODE ] = RUNNER
+    CATRANK[RUNNER[4]] = 1
+  except:
+    print("Skip ",r)
 
 for (k,v) in RUNNERS.items():
     print(k,v)
@@ -37,19 +47,28 @@ try:
     M = int(L[1])
     S = float(L[2])
     START_TIME = ( H * 3660 ) + ( M * 60 ) + S
+    for L in DATA:
+      D = L.split(';')
+      CAT=D[4].strip()
+      if CAT != "":
+        CATRANK[CAT] = int(D[5])+1
     rank = int(DATA[-1].split(';')[0])
+    print("Restart from %s : T=%.2f , R=%d"%(RESULT_FILE,START_TIME,rank))
+    for CAT in CATRANK.keys():
+      print("\t%s => %d"%(CAT,CATRANK[CAT]))
 except:
     START_TIME = time.perf_counter()
-    rank = 1
+    rank = 0
 
 # print an empty line 
 ofile = open(RESULT_FILE,'a+')
-SECONDS = time.perf_counter() - START_TIME
+SECONDS = time.perf_counter()
 MINUTES = int(SECONDS)//60
 SECONDS -= MINUTES * 60
 HOURS = MINUTES//60
 MINUTES -= HOURS*60
-output_line = "%04d ; %02d:%02d:%05.2f ; ?%d ; ; ; " % (rank,HOURS,MINUTES,SECONDS,BIB_ID)
+output_line = "%04d ; %02d:%02d:%05.2f ; ?%d ; ; ; " % (rank,HOURS,MINUTES,SECONDS,0)
+print(output_line)
 ofile.write(output_line+'\n')
 ofile.flush()
 rank = rank + 1
@@ -66,16 +85,21 @@ while BIB_CODE != "end":
     MINUTES -= HOURS*60
     BIB_ID=int(BIB_CODE)
     output_line = "";
+    CAT = "XX"
     if not BIB_ID in RUNNERS.keys():
         output_line = "%04d ; %02d:%02d:%05.2f ; ?%d ; ; ; " % (rank,HOURS,MINUTES,SECONDS,BIB_ID)
     else:
         runner = RUNNERS[BIB_ID]
-        crank = CATRANK[runner[5]]
-        output_line = "%04d ; %02d:%02d:%05.2f ; #%.13s ; %.20s %.20s ; %s ; %d" % (rank,HOURS,MINUTES,SECONDS,runner[1],runner[3],runner[4],runner[5],crank)
+        BIB_NUM = runner[0]
+        LNAME = runner[1]
+        FNAME = runner[2]
+        CAT = runner[4]
+        crank = CATRANK[CAT]
+        output_line = "%05d ; %02d:%02d:%05.2f ; #%05d ; %.20s %.20s ; %s ; %d" % (rank,HOURS,MINUTES,SECONDS,BIB_NUM,LNAME,FNAME,CAT,crank)
+        CATRANK[CAT] = CATRANK[CAT] + 1
     print(output_line)
     ofile.write(output_line+'\n')
     ofile.flush()
     rank = rank + 1
-    CATRANK[runner[5]] = crank + 1
     BIB_CODE = input()
 

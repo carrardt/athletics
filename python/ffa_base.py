@@ -17,7 +17,7 @@ class FFAAthleteHTMLParser(HTMLParser):
     self.m_club_flag = 0
     super().__init__()
   def handle_data(self, data):
-    print("Data '%s'" % data)
+#    print("Data '%s'" % data)
     if self.m_club_flag==0 and data=='Club':
       self.m_club_flag = 1
     elif self.m_club_flag==1 and data==':':
@@ -25,7 +25,13 @@ class FFAAthleteHTMLParser(HTMLParser):
     elif self.m_club_flag==2:
       self.m_club_flag = 3
     elif self.m_club_flag==3:
-      self.m_db["club"] = data.split(' - ')
+      da = data.split(' - ')
+      self.m_db["num_club"] = da[0]
+      self.m_db["nom_club"] = da[1]
+      if len(da) >= 3:
+        self.m_db["nom_sl"] = da[2]
+      else:
+        self.m_db["nom_sl"] = "N/A"
       self.m_club_flag = 999
   def db(self):
     return self.m_db
@@ -34,8 +40,7 @@ def ffa_athlete(id):
     URL_FMT = "https://bases.athle.fr/asp.net/athletes.aspx?base=resultats&seq=%s"
     parser = FFAAthleteHTMLParser()
     parser.feed( urllib.request.urlopen( URL_FMT % strToHex(id) ).read().decode('utf-8') )
-    db = parser.db()
-    print( db )
+    return parser.db()
 
 class FFAResultsHTMLParser(HTMLParser):
   def __init__(self):
@@ -134,7 +139,7 @@ def write_cache_athletes(athletes_db):
 if __name__=='__main__':
   athletes_db = load_cache_athletes()
   saison = 2024
-  clubs = [ '091083' ] #, '091013' ]
+  clubs = [ '091083' , '091013' ]
   db = ffa_club_saison(saison,clubs)
   fout = open('saison_%d.csv'%saison,"w")
   for r in db:

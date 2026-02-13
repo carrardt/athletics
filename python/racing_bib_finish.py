@@ -5,7 +5,7 @@ import sys
 import os
 
 # Categories for each birth year
-CAT_YEAR = { 2019: 'BB' , 2020: 'BB' , 2016: 'EA' , 2017: 'EA' , 2018: 'EA' , 2014: 'PO' , 2015: 'PO' , 2012: 'BE' , 2013: 'BE' , 2010: 'MI' , 2011: 'MI' }
+CAT_YEAR = { 2020: 'BB' , 2021: 'BB' , 2017: 'EA' , 2018: 'EA' , 2019: 'EA' , 2015: 'PO' , 2016: 'PO' , 2013: 'BE' , 2014: 'BE' , 2011: 'MI' , 2012: 'MI' }
 
 # first, get that race start time
 START_TIME = time.perf_counter()
@@ -87,7 +87,7 @@ while BIB_CODE != "end":
     output_line = "";
     CAT = "XX"
     if not BIB_ID in RUNNERS.keys():
-        output_line = "%04d ; %02d:%02d:%05.2f ; ?%d ; ; ; " % (rank,HOURS,MINUTES,SECONDS,BIB_ID)
+        output_line = "%04d ; %02d:%02d:%05.2f ; %d ; ; ; " % (rank,HOURS,MINUTES,SECONDS,BIB_ID//10)
     else:
         runner = RUNNERS[BIB_ID]
         BIB_NUM = runner[0]
